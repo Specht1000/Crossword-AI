@@ -5,6 +5,8 @@ from trie import Trie
 
 logger = setup_logger()
 
+# Funções lambdas geradas por IA
+
 # Função para carregar o grid de um arquivo
 def load_grid(file_path: str) -> List[List[str]]:
     with open(file_path, 'r') as file:
@@ -30,6 +32,7 @@ def is_grid_complete(grid: List[List[str]]) -> bool:
             return False
     return True
 
+# Verifica se todas as palavras no grid estão na lista de palavras/Trie
 def validate_all_words_in_grid(grid: List[List[str]], words_trie: Trie) -> bool:
     # Captura todas as palavras horizontais e verticais do grid
     all_words = get_all_words_from_grid(grid)
@@ -56,9 +59,9 @@ def get_all_words_from_grid(grid: List[List[str]]) -> List[Tuple[str, int, int, 
     for row in range(len(grid)):
         col = 0
         while col < len(grid[0]):
-            if grid[row][col] != '.':
+            if grid[row][col] != '.': # Se a célula não for um ponto significa que é o início de uma palavra
                 start_col = col
-                while col < len(grid[0]) and grid[row][col] != '.':
+                while col < len(grid[0]) and grid[row][col] != '.': # Percorre a linha até encontrar outro ponto que seria o final da palavra
                     col += 1
                 word = ''.join(grid[row][start_col:col])  # Extrai a palavra horizontal
                 if len(word) > 1:  # Apenas considera palavras com duas ou mais letras
@@ -70,9 +73,9 @@ def get_all_words_from_grid(grid: List[List[str]]) -> List[Tuple[str, int, int, 
     for col in range(len(grid[0])):
         row = 0
         while row < len(grid):
-            if grid[row][col] != '.':
+            if grid[row][col] != '.': # Se a célula não for um ponto significa que é o início de uma palavra
                 start_row = row
-                while row < len(grid) and grid[row][col] != '.':
+                while row < len(grid) and grid[row][col] != '.': # Percorre a linha até encontrar outro ponto que seria o final da palavra
                     row += 1
                 word = ''.join(grid[i][col] for i in range(start_row, row))  # Extrai a palavra vertical
                 if len(word) > 1:  # Apenas considera palavras com duas ou mais letras
@@ -84,24 +87,25 @@ def get_all_words_from_grid(grid: List[List[str]]) -> List[Tuple[str, int, int, 
 
 # Função para detectar palavras que interceptam o espaço (horizontal ou vertical)
 def find_intersecting_words(grid: List[List[str]], row: int, col: int, direction: str, used_words: List[Tuple[str, int, int, str]]) -> List[Tuple[str, int, int, str]]:
-    intersecting_words: List[Tuple[str, int, int, str]] = []
+    intersecting_words: List[Tuple[str, int, int, str]] = [] # [(palavra, linha, coluna, direção)]
 
     if direction == 'H':  # Verifica interceptação horizontal
-        for i in range(len(grid[0])):
-            if grid[row][i] != '.' and grid[row][i] != '?':
+        for i in range(len(grid[0])): # Percorre todas as colunas na linha especificada para verificar a possível interseção com uma palavra vertical
+            if grid[row][i] != '.' and grid[row][i] != '?': # Verifica se há uma letra, logo está sendo interceptada por uma palavra
                 for word, wr, wc, wd in used_words:
-                    if wd == 'V' and wc == i and wr <= row < wr + len(word):
+                    if wd == 'V' and wc == i and wr <= row < wr + len(word): # Verifica se alguma palavra vertical intercepta a posição que está sendo checada. A interseção ocorre se a palavra vertical começa em uma coluna (wc == i) que coincide com a coluna atual. A palavra vertical se estende de forma que inclui a linha atual (wr <= row < wr + len(word)):
                         intersecting_words.append((word, wr, wc, wd))
 
     elif direction == 'V':  # Verifica interceptação vertical
-        for i in range(len(grid)):
-            if grid[i][col] != '.' and grid[i][col] != '?':
+        for i in range(len(grid)): # Percorre todas as colunas na linha especificada para verificar a possível interseção com uma palavra horizontal
+            if grid[i][col] != '.' and grid[i][col] != '?': # Verifica se há uma letra, logo está sendo interceptada por uma palavra
                 for word, wr, wc, wd in used_words:
-                    if wd == 'H' and wr == i and wc <= col < wc + len(word):
+                    if wd == 'H' and wr == i and wc <= col < wc + len(word): # Verifica se alguma palavra horizontal intercepta a posição que está sendo checada. A interseção ocorre se a palavra vertical começa em uma coluna (wr == i) que coincide com a coluna atual. A palavra vertical se estende de forma que inclui a linha atual (wc <= col < wc + len(word)):
                         intersecting_words.append((word, wr, wc, wd))
 
     return intersecting_words  # Retorna as palavras que interceptam
 
+# Coloca uma palavra em um espaço no grid
 def place_word(grid: List[List[str]], word: str, row: int, col: int, direction: str) -> None:
     # Verifica se a palavra pode ser colocada e faz a impressão apenas uma vez
     logger.info(f"\nColocando palavra '{word}' na posição ({row}, {col}) na direção {direction}.")
@@ -115,18 +119,25 @@ def place_word(grid: List[List[str]], word: str, row: int, col: int, direction: 
 
     print_grid(grid)  # Apenas uma impressão do grid após colocar a palavra
 
+# Remove uma palavra em um espaço no grid
 def remove_word(grid: List[List[str]], word: str, row: int, col: int, direction: str, used_words: List[Tuple[str, int, int, str]]) -> None:
     logger.info(f"\nRemovendo palavra '{word}' da posição ({row}, {col}) na direção {direction}.")
     length: int = len(word)
     if direction == 'H':
         for i in range(length):
             if col + i < len(grid[0]) and grid[row][col + i] == word[i]:
+                # Verifica se uma das letras da palavra removida pertence a outra palavra também.
+                # (c == col + i): Verifica se a palavra vertical está na mesma coluna da letra atual da palavra a ser removida.
+                # (r <= row < r + len(w)): Verifica se a palavra vertical se estende de forma que inclua a linha atual.
                 if not any(w for w, r, c, d in used_words if d == 'V' and c == col + i and r <= row < r + len(w)):
                     grid[row][col + i] = '?'  # Substitui a letra por '?'
     elif direction == 'V':
         for i in range(length):
             if row + i < len(grid) and grid[row + i][col] == word[i]:
-                if not any(w for w, r, c, d in used_words if d == 'H' and r == row + i and c <= col < c + len(w)):
+                # Verifica se uma das letras da palavra removida pertence a outra palavra também.
+                # (r == row + i): Verifica se a palavra horizontal está na mesma linha da letra atual da palavra a ser removida.
+                # (c <= col < c + len(w)): Verifica se a palavra horizontal se estende de forma que inclua a linha atual.
+                if not any(w for w, r, c, d in used_words if d == 'H' and r == row + i and c <= col < c + len(w)): # Verifica se uma das letras da palavra removida pertence a outra palavra também
                     grid[row + i][col] = '?'  # Substitui a letra por '?'
     # Imprime o grid após a palavra ser removida
     print_grid(grid)  # A impressão acontece após a remoção
@@ -140,9 +151,6 @@ def remove_intersecting_words_for_invalid(grid: List[List[str]], word: str, row:
         logger.info(f"Removendo palavra interceptada: {intersect_word} na posição ({wr}, {wc}) na direção {wd}.")
         remove_word_if_exists(grid, intersect_word, wr, wc, wd, used_words)
 
-    # Após remover as palavras cruzadas, remova a palavra inválida do grid
-    remove_word_if_exists(grid, word, row, col, direction, used_words)
-
 # Remove uma palavra do grid e da lista de palavras usadas, se estiver presente
 def remove_word_if_exists(grid: List[List[str]], word: str, row: int, col: int, direction: str, used_words: List[Tuple[str, int, int, str]]) -> None:
     if (word, row, col, direction) in used_words:
@@ -151,8 +159,8 @@ def remove_word_if_exists(grid: List[List[str]], word: str, row: int, col: int, 
     else:
         logger.info(f"Tentativa de remover palavra '{word}' falhou: não encontrada em used_words.")
 
-# Adicionando limite de remoções para evitar loops infinitos
-MAX_REMOVALS = 5  # Limite de tentativas de remoção por palavra
+MAX_REMOVALS = 5  # Limite de tentativas de remoção por palavra, para evitar loops
+# Remove palavras que estão bloqueando o preenchimento correto do grid de palavras cruzadas
 def remove_blocking_words(grid: List[List[str]], row: int, col: int, direction: str, used_words: List[Tuple[str, int, int, str]], removed_words: List[str], removal_attempts: Dict[str, int]) -> bool:
     intersecting_words: List[Tuple[str, int, int, str]] = find_intersecting_words(grid, row, col, direction, used_words)
 
@@ -160,6 +168,9 @@ def remove_blocking_words(grid: List[List[str]], row: int, col: int, direction: 
         logger.info(f"Verificando palavras que interceptam o espaço ({row}, {col}) na direção {direction}.")
 
         # Ordena as palavras pela prioridade de remoção
+        # Palavras com mais letras comuns são menos prioritárias para a remoção
+        # Palavras menores são mais prioritárias para serem removidas
+        # Palavras com mais interceptações são menos prioritárias para a remoção
         intersecting_words.sort(key=lambda x: (priority_removal_criteria(x[0]), len(x[0]), -find_intersections(x[0], x[1], x[2], x[3], used_words)))
 
         for word_to_remove in intersecting_words:
@@ -199,7 +210,7 @@ def can_place_word(grid: List[List[str]], word: str, row: int, col: int, directi
 
 # Função para encontrar espaços livres no grid
 def find_free_spaces(grid: List[List[str]]) -> List[Tuple[int, int, int, str, int, int]]:
-    free_spaces: List[Tuple[int, int, int, str, int, int]] = []
+    free_spaces: List[Tuple[int, int, int, str, int, int]] = [] # [(linha, coluna, comprimento do espaço, direção, n° de letras fixas, n° de interseções)]
 
     # Detectar espaços horizontais
     for row in range(len(grid)):
@@ -234,16 +245,16 @@ def find_free_spaces(grid: List[List[str]]) -> List[Tuple[int, int, int, str, in
                     if grid[row][col] != '?':
                         fixed_letters += 1
                     if col > 0 and grid[row][col - 1] != '.' and grid[row][col - 1] != '?':
-                        intersecoes += 1
+                        intersecoes += 1 # Incrementa se há interseções na esquerda
                     if col < len(grid[0]) - 1 and grid[row][col + 1] != '.' and grid[row][col + 1] != '?':
-                        intersecoes += 1
+                        intersecoes += 1 # Incrementa se há interseções na direita
                     row += 1
                 if row - start_row > 1:
                     free_spaces.append((start_row, col, row - start_row, 'V', fixed_letters, intersecoes))
             else:
                 row += 1
 
-    # Ordena por interseções, depois comprimento, depois letras fixas
+    # Primeiro ordena pelas interseções (maior número de interseções tem prioridade), depois pelo comprimento e por último pelas letras fixas
     free_spaces.sort(key=lambda x: (-x[5], -x[2], -x[4]))
     return free_spaces
 
@@ -263,11 +274,11 @@ def find_max_word_length_and_existing_letters(grid: List[List[str]], row: int, c
                 existing_letters[max_length] = grid[row + max_length][col]
             max_length += 1
 
-    return max_length, existing_letters
+    return max_length, existing_letters # (n° de letras, {posição da letra : letra})
 
 # Função para criar um padrão de caracteres a partir das letras existentes
 def create_pattern_from_existing_letters(max_length: int, existing_letters: Dict[int, str]) -> str:
-    pattern: List[str] = ['?'] * max_length
-    for position, letter in existing_letters.items():
-        pattern[position] = letter
-    return ''.join(pattern)
+    pattern: List[str] = ['?'] * max_length  # Inicializa uma lista de caracteres '?' com o comprimento máximo da palavra
+    for position, letter in existing_letters.items():  # Itera sobre as letras existentes e suas posições
+        pattern[position] = letter  # Substitui o '?' pela letra que já existe na posição correspondente
+    return ''.join(pattern)  # Junta a lista de caracteres em uma string e a retorna
