@@ -65,6 +65,7 @@ def solve(grid: List[List[str]], words_trie: Trie, word_size_map: Dict[int, List
         matching_words: List[str] = [word for word in words_trie.search_with_pattern(pattern) if len(word) == max_length and word not in removed_words]
         matching_words = prioritize_words(matching_words)
 
+        # Controle de tentativas e colocação de palavras
         if (row, col, direction) not in tried_words:
             tried_words[(row, col, direction)] = set()
 
@@ -81,7 +82,7 @@ def solve(grid: List[List[str]], words_trie: Trie, word_size_map: Dict[int, List
 
             if word not in [w[0] for w in used_words] and can_place_word(grid, word, row, col, direction):
                 # Apenas uma vez log e impressão
-                place_word(grid, word, row, col, direction)  # Chama a função `place_word` apenas uma vez
+                place_word(grid, word, row, col, direction)
                 used_words.append((word, row, col, direction))
                 print_grid(grid)  # Imprime o grid após colocar a palavra
 
@@ -96,7 +97,8 @@ def solve(grid: List[List[str]], words_trie: Trie, word_size_map: Dict[int, List
                 removed_words.append(word)
                 attempt_count[(row, col, direction)] += 1
                 tried_words[(row, col, direction)].add(word)
-
+        
+        # Se o espaço não puder ser preenchido, tenta remover palavras bloqueantes
         if not matching_words or attempt_count[(row, col, direction)] >= retry_limit:
             if is_grid_complete(grid):
                 # Validação adicional para garantir que o grid está quase completo
