@@ -7,16 +7,12 @@ logger = setup_logger()
 
 # Função para carregar o grid de um arquivo
 def load_grid(file_path: str) -> List[List[str]]:
-    """Carrega o grid a partir de um arquivo."""
     with open(file_path, 'r') as file:
         return [list(line.strip()) for line in file.readlines()]
 
 # Defina uma variável global para armazenar o último grid impresso
 last_printed_grid = ""
 def print_grid(grid: List[List[str]]) -> None:
-    """
-    Imprime o grid apenas se ele tiver mudado desde a última vez.
-    """
     global last_printed_grid
     # Constrói o grid como uma string para comparação
     current_grid = '\n'.join(''.join(line) for line in grid)
@@ -29,7 +25,6 @@ def print_grid(grid: List[List[str]]) -> None:
 
 # Função para verificar se o grid foi completamente preenchido
 def is_grid_complete(grid: List[List[str]]) -> bool:
-    """Verifica se o grid está completamente preenchido, ou seja, se não há mais espaços com '?'."""
     for row in grid:
         if '?' in row:
             return False
