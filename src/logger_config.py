@@ -1,6 +1,7 @@
 import logging
 import os
 
+# Função gerada por IA
 def setup_logger():
     # Verificar se o diretório 'files' existe, e criar se não existir
     log_directory = 'src/files'
