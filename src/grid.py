@@ -188,7 +188,6 @@ def remove_blocking_words(grid: List[List[str]], row: int, col: int, direction: 
 
 # Função para verificar se uma palavra pode ser colocada no grid
 def can_place_word(grid: List[List[str]], word: str, row: int, col: int, direction: str) -> bool:
-    """Verifica se uma palavra pode ser colocada no grid na posição e direção especificadas."""
     if direction == 'H':  # Direção horizontal
         if col + len(word) > len(grid[0]):  # A palavra cabe no grid horizontalmente?
             return False
@@ -205,7 +204,6 @@ def can_place_word(grid: List[List[str]], word: str, row: int, col: int, directi
 
 # Função para encontrar espaços livres no grid
 def find_free_spaces(grid: List[List[str]]) -> List[Tuple[int, int, int, str, int, int]]:
-    """Encontra os espaços livres no grid, priorizando interseções e palavras maiores."""
     free_spaces: List[Tuple[int, int, int, str, int, int]] = []
 
     # Detectar espaços horizontais
@@ -256,7 +254,6 @@ def find_free_spaces(grid: List[List[str]]) -> List[Tuple[int, int, int, str, in
 
 # Função para encontrar o comprimento máximo possível e as letras existentes para uma palavra
 def find_max_word_length_and_existing_letters(grid: List[List[str]], row: int, col: int, direction: str) -> Tuple[int, Dict[int, str]]:
-    """Encontra o comprimento máximo possível e as letras existentes para uma palavra."""
     max_length: int = 0
     existing_letters: Dict[int, str] = {}
 
@@ -275,7 +272,6 @@ def find_max_word_length_and_existing_letters(grid: List[List[str]], row: int, c
 
 # Função para criar um padrão de caracteres a partir das letras existentes
 def create_pattern_from_existing_letters(max_length: int, existing_letters: Dict[int, str]) -> str:
-    """Cria um padrão para buscar palavras baseadas nas letras já presentes."""
     pattern: List[str] = ['?'] * max_length
     for position, letter in existing_letters.items():
         pattern[position] = letter
